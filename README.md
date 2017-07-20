@@ -20,29 +20,31 @@ The responses are in JSON. You can use parameters to create SQL-statmenents (saf
 Setup
 -------------
 
-In the `response.json` file you can type in your database information, so the Connect-class knows where to fetch the data.
+In the `details.php` file you can type in your database information, so the Connect-class knows where to fetch the data.
 
 ```
-  "database": {
-      "host": "XXX",
-      "dbname": "XXX",
-      "username": "XXX",
-      "password": "XXX"
-  },
+"database" =>
+    [
+         "host" => "XXX",
+         "dbname" => "XXX",
+         "username" => "XXX",
+         "password" => "XXX"
+    ],
 
 ```
 
 Paths
 -------------
 
-You can connect your MySQL-tables to the URL path, by editing the `response.json` file. To add more simply name your path and then the table.
+You can connect your MySQL-tables to the URL path, by editing the `details.php` file. To add more simply name your path and then the table.
 
 ```
-  "parameters": {
-      "path": "MYSQL-TABLE-NAME",
-      "users": "users",
-      "products": "Shop_Products"
-  }
+"paths" =>
+    [
+         "path" => "MYSQL-TABLE-NAME",
+         "users" => "users",
+         "products" => "Shop_Products"
+    ]
 ```
 
 If we would request data from `api.php/products`  then we would receive data from the table "Shop_Products". So you choose the path and which table to connect it to.
@@ -97,7 +99,7 @@ CREATE TABLE `users`
 ) ENGINE INNODB CHARACTER SET utf8 COLLATE utf8_swedish_ci;
 
 
-INSERT INTO `content` (`username`, `password`, `authority`) VALUES
+INSERT INTO `users` (`username`, `password`, `authority`) VALUES
     ("Nicklas766", "pass1", "admin"),
     ("Rasmus Lerdorf", "pass2", "admin"),
     ("Jessica", "pass3", "admin"),

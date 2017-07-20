@@ -3,13 +3,11 @@
   <h2 style="border-bottom: orange solid 1px;"> Crudify </h2>
 
 <?php
-    // GET JSON-file
-    $str = file_get_contents('response.json');
-    $json = json_decode($str, true); // decode the JSON into an associative array
-
+    // GET details
+    $obj = (include 'details.php');
     $url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
     $path = basename(parse_url($url, PHP_URL_PATH));
-    $validPaths = array_keys($json["paths"]);
+    $validPaths = array_keys($obj["paths"]);
     $url = "http://$_SERVER[HTTP_HOST]$_SERVER[PHP_SELF]";
     if (!in_array($path, $validPaths)) {
         echo "<h3> Please before going further, please choose which TABLE you would like to try, by choosing a PATH: </h3>";

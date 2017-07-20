@@ -26,12 +26,12 @@ class DataHandler
       $url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
       $this->path = basename(parse_url($url, PHP_URL_PATH));
       $this->validPaths = array_keys($obj["paths"]);
-      $this->table = $obj["paths"][$this->path];
       $this->method = $_SERVER['REQUEST_METHOD'];
 
       // controlPath then get table rows
-      $table = $this->controlPath();
-      $this->tableRows = $connect->fetchArray("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='$table'");
+      $this->controlPath();
+      $this->table = $obj["paths"][$this->path];
+      $this->tableRows = $connect->fetchArray("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='$this->table'");
 
       // Get the GETS in the $this->validParams
       // $this->params = methodData($this->method);
