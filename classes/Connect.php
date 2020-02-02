@@ -12,12 +12,12 @@ class Connect
     public function __construct($obj)
     {
         // Server
-        $databaseConfig = [
+        $databaseConfig = array(
             "dsn"      => "mysql:host=$obj[host];dbname=$obj[dbname]",
             "login"    => "$obj[username]",
             "password" => "$obj[password]",
-            "options"  => [PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'"],
-        ];
+            "options"  => array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'"),
+        );
 
         try {
             $db = new PDO(...array_values($databaseConfig));
@@ -36,7 +36,8 @@ class Connect
       switch ($data->method) {
 
         case 'GET':
-          return $this->jsonResponse($sql->sql, $data->sqlParams);
+          //return $this->jsonResponse($sql->sql, $data->sqlParams);
+		  return $this->jsonResponse($sql->sql, $data->sqlParams, returnInfo ($data, $sql, $this->rowCount($sql->sql)));
         case 'POST':
           $this->execute($sql->sql, $data->posts);
           return $this->jsonResponse("SELECT * FROM $data->table WHERE id=" . $this->db->lastInsertId());
@@ -54,11 +55,18 @@ class Connect
         $stmt = $this->db->prepare($sql);
         $stmt->execute($sqlParams);
     }
+    public function rowCount($sql) {
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+		return $stmt->rowCount();
+    }
     // Fetches from MySQL DB and returns as JSON
-    public function jsonResponse($sql, $sqlParams = null) {
+    //public function jsonResponse($sql, $sqlParams = null) {
+    public function jsonResponse($sql, $sqlParams = null, $info = null) {
         $stmt = $this->db->prepare($sql);
         $stmt->execute($sqlParams);
-        return json_encode($stmt->fetchAll(PDO::FETCH_ASSOC), JSON_PRETTY_PRINT);
+        //info added page nummer, id etc.
+        return json_encode(array ('info'=>$info,'data'=>$stmt->fetchAll(PDO::FETCH_ASSOC), JSON_PRETTY_PRINT));
     }
 
     // get res with one fetch
