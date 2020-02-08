@@ -1,10 +1,10 @@
 <?php
 // Moves the element to the end index and return array
 function moveIndexEnd($array, $key) {
-        $newArray = $array;
-        unset($newArray[$key]);
-        $newArray[] = $array[$key];
-        return $newArray;
+    $newArray = $array;
+    unset($newArray[$key]);
+    $newArray[] = $array[$key];
+    return $newArray;
     }
     // Returns array without given $key, array_values for re-index array
 function arrayKeyRemove($arr, $key) {
@@ -27,24 +27,23 @@ function sqlOperator($params) {
         $operator = "$params[filterOperator] $params[where] LIKE ";
         // create array with the sent in string
         $pieces = explode(",", $params["filter"]);
-
         // prepare SQL statement again with wildcards
         foreach($pieces as $key => $value) {
                 $pieces[$key] = " '%".$value.
                 "%' ";
             }
-            // return string with operator for multiple "LIKEs" and "ANDs" and "ORs"
+        // return string with operator for multiple "LIKEs" and "ANDs" and "ORs"
         return implode($operator, $pieces);
     }
-    //These two functions are added for ease of writing
+//These two functions are added for ease of writing
 function arrayCheck($value, $array) {
     return $array[array_search(strtolower($value), array_map('strtolower', $array))];
 }
 
 function arrayCheckIn($value, $array) {
-        return in_array(strtolower($value), array_map('strtolower', $array));
+    return in_array(strtolower($value), array_map('strtolower', $array));
     }
-    // multible orderig organizer.
+// multible orderig organizer.
 function orderOrganizer($order, $tableRows, $id) {
     $organizeOrder = "";
     $sortArray = array("ASC", "DESC");
@@ -54,12 +53,12 @@ function orderOrganizer($order, $tableRows, $id) {
         $col = $id;
         $parts = explode(",", $slice);
         foreach($parts as $part) {
-                if (arrayCheckIn($part, $sortArray)) {
-                    $sorter = arrayCheck($part, $sortArray);
-                } else if (arrayCheckIn($part, $tableRows)) {
-                    $col = arrayCheck($part, $tableRows);
-                }
-            } //part and
+            if (arrayCheckIn($part, $sortArray)) {
+                $sorter = arrayCheck($part, $sortArray);
+            } else if (arrayCheckIn($part, $tableRows)) {
+                $col = arrayCheck($part, $tableRows);
+            }
+        } //part and
 
         $organizeOrder .= "`".$col.
         "` ".$sorter;
@@ -67,7 +66,6 @@ function orderOrganizer($order, $tableRows, $id) {
         if ($slice !== end($slices)) {
             $organizeOrder .= ",";
         }
-
     }
     return $organizeOrder;
 }

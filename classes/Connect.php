@@ -28,13 +28,10 @@ class Connect {
             throw new PDOException("Could not connect to database, hiding details.");
         }
     }
-
-    //
     public
     function startResponse($data, $sql) {
         // Based on method, do GET, POST, PUT, DELETE
         switch ($data -> method) {
-
             case 'GET':
                 return $this -> jsonResponse($sql -> sql, $data -> sqlParams, returnInfo($data, $sql, $this -> rowCount($sql -> paginationSQL)));
             case 'POST':
@@ -47,9 +44,7 @@ class Connect {
                 $this -> execute($sql -> sql, $data -> sqlParams);
                 return $this -> jsonResponse("SELECT * FROM $data->table");
         }
-
     }
-
     public
     function execute($sql, $sqlParams = null) {
         $stmt = $this -> db -> prepare($sql);
@@ -61,7 +56,7 @@ class Connect {
             $stmt -> execute();
             return $stmt -> rowCount();
         }
-        // Fetches from MySQL DB and returns as JSON
+    // Fetches from MySQL DB and returns as JSON
     public
     function jsonResponse($sql, $sqlParams = null, $info = null) {
         $stmt = $this -> db -> prepare($sql);

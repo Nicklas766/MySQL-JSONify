@@ -16,7 +16,7 @@ class DataHandler {
     private $validParams = array("select", "order", "where", "id", "filter", "limit", "offset", "page");
     private $validPaths;
     public $id;
-	
+
     /**
      * Constructor
      */
@@ -45,23 +45,22 @@ class DataHandler {
         $putParams = array_combine($this -> tableRows, array_map("getGet", $this -> tableRows));
         $this -> putParams = array_values(moveIndexEnd($putParams, $this -> id));
 
-        $this -> sqlParams = array(':id' => $this -> params["id"]);//No need to escape it
+        $this -> sqlParams = array(':id' => $this -> params["id"]); //No need to escape it
     }
-
     /**
      * errorHandler, echos ERROR JSON-response and it ends here
      */
     public
     function errorHandler() {
-            $errorPath = array('validPaths' => $this -> validPaths, 'givenPath' => $this -> path);
-            $errorParam = array('validSelects' => "ALL table columns, $this->path", 'validParams' => $this -> validParams, 'givenParams' => $this -> params);
-            $error = array('Path' => $errorPath, 'Param' => $errorParam);
-            echo json_encode($error, JSON_PRETTY_PRINT);
-            die();
-        }
-        /**
-         * @return true if valid, else false
-         */
+        $errorPath = array('validPaths' => $this -> validPaths, 'givenPath' => $this -> path);
+        $errorParam = array('validSelects' => "ALL table columns, $this->path", 'validParams' => $this -> validParams, 'givenParams' => $this -> params);
+        $error = array('Path' => $errorPath, 'Param' => $errorParam);
+        echo json_encode($error, JSON_PRETTY_PRINT);
+        die();
+    }
+    /**
+    * @return true if valid, else false
+    */
     public
     function controlPath() {
         if (!in_array($this -> path, $this -> validPaths)) {
@@ -76,11 +75,11 @@ class DataHandler {
         // Controll Select
         // Incoming matches valid value sets
         $selectParams = explode(",", $this -> params["select"]);
-        foreach($selectParams as $selectParam) {}
-        if (!in_array($selectParam, $this -> tableRows) && $selectParam) {
-            $this -> errorHandler($this);
+        foreach($selectParams as $selectParam) {
+            if (!in_array($selectParam, $this -> tableRows) && $selectParam) {
+                $this -> errorHandler($this);
+            }
         }
-
         // ---------------------------------------------------
         // Only these values are valid
         if (!is_numeric($this -> params["offset"]) && $this -> params["offset"]) {
