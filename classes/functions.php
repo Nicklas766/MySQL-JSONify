@@ -44,13 +44,13 @@ function arrayCheckIn($value, $array) {
     return in_array(strtolower($value), array_map('strtolower', $array));
     }
 // multible orderig organizer.
-function orderOrganizer($order, $tableRows, $id) {
+function orderOrganizer($order, $tableRows, $idCol) {
     $organizeOrder = "";
     $sortArray = array("ASC", "DESC");
     $slices = explode(";", $order);
     foreach($slices as $slice) {
         $sorter = "ASC";
-        $col = $id;
+        $col = $idCol;
         $parts = explode(",", $slice);
         foreach($parts as $part) {
             if (arrayCheckIn($part, $sortArray)) {
@@ -71,8 +71,8 @@ function orderOrganizer($order, $tableRows, $id) {
 }
 
 function filterOrganizer($filter, $tableRows) {
-    $comparisonOperatorsArray = array("LIKE", "NOT LIKE");
-    $logicalOperatorsArray = array("AND", "OR", "||", "&&", "XOR");
+    $comOperatorsArray = array("LIKE", "NOT LIKE");
+    $logOperatorsArray = array("AND", "OR", "||", "&&", "XOR");
     $slices = explode(";", $filter);
     $organizeFilter = "";
     foreach($slices as $slice) {
@@ -81,12 +81,12 @@ function filterOrganizer($filter, $tableRows) {
         $search = "";
         $parts = explode(",", $slice);
         foreach($parts as $part) {
-            if (arrayCheckIn($part, $comparisonOperatorsArray)) {
-                $sorter = arrayCheck($part, $comparisonOperatorsArray);
+            if (arrayCheckIn($part, $comOperatorsArray)) {
+                $comOperator = arrayCheck($part, $comOperatorsArray);
             } else if (arrayCheckIn($part, $tableRows)) {
                 $col = arrayCheck($part, $tableRows);
-            } else if (arrayCheckIn($part, $logicalOperatorsArray)) {
-                $logOperator = arrayCheck($part, $logicalOperatorsArray);
+            } else if (arrayCheckIn($part, $logOperatorsArray)) {
+                $logOperator = arrayCheck($part, $logOperatorsArray);
             } else {
                 $search = $part;
             }
@@ -131,6 +131,6 @@ function returnInfo($data, $sql, $rowCount) {
         $info["limit"] = $params["limit"];
         $info["numberOfPages"] = ceil($info["rowCount"] / $info["limit"]);
     }
-    $info["id"] = $data -> id;
+    $info["id"] = $data -> idCol;
     return $info;
 }

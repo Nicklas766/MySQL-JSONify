@@ -59,7 +59,7 @@ class SQLify {
         }
         //Order if
         if ($params["order"]) {
-            $order = "ORDER BY ".orderOrganizer($params["order"], $data -> tableRows, $data -> id);
+            $order = "ORDER BY ".orderOrganizer($params["order"], $data -> tableRows, $data -> idCol);
         } else {
             $order = "";
         }
