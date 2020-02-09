@@ -6,7 +6,7 @@ function moveIndexEnd($array, $key) {
     $newArray[] = $array[$key];
     return $newArray;
     }
-    // Returns array without given $key, array_values for re-index array
+// Returns array without given $key, array_values for re-index array
 function arrayKeyRemove($arr, $key) {
     return array_values(array_filter($arr, function($k) use($key) {
         return $k != $key;

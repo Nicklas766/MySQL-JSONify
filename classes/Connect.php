@@ -36,10 +36,10 @@ class Connect {
                 return $this -> jsonResponse($sql -> sql, $data -> sqlParams, returnInfo($data, $sql, $this -> rowCount($sql -> paginationSQL)));
             case 'POST':
                 $this -> execute($sql -> sql, $data -> posts);
-                return $this -> jsonResponse("SELECT * FROM $data->table WHERE id=".$this -> db -> lastInsertId());
+                return $this -> jsonResponse("SELECT * FROM $data->table WHERE $data->idCol=".$this -> db -> lastInsertId());
             case 'PUT':
                 $this -> execute($sql -> sql, $data -> putParams);
-                return $this -> jsonResponse("SELECT * FROM $data->table WHERE id=".end($data -> putParams));
+                return $this -> jsonResponse("SELECT * FROM $data->table WHERE $data->idCol=".end($data -> putParams));
             case 'DELETE':
                 $this -> execute($sql -> sql, $data -> sqlParams);
                 return $this -> jsonResponse("SELECT * FROM $data->table");
