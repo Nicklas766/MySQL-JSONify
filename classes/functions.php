@@ -19,8 +19,12 @@ function getGet($key, $default = null) {
 }
 
 // The function returns the GET based on key.
-function getPOST($key, $default = null) {
-    return isset($_POST[$key]) ? $_POST[$key] : $default;
+function getPOST($key, $default = "?") {
+    if(isset($_POST[$key])){
+        return $_POST[$key];
+    }else{
+	    return $default;
+    }
 }
 
 function sqlOperator($params) {
@@ -43,6 +47,10 @@ function arrayCheck($value, $array) {
 function arrayCheckIn($value, $array) {
     return in_array(strtolower($value), array_map('strtolower', $array));
     }
+//These two functions are added for ease of writing
+function searchEscape($value) {
+    return str_replace("'", "\'",str_replace('"', '\"',str_replace('\\\\', "\\", $value)));
+}
 // multible orderig organizer.
 function orderOrganizer($order, $tableRows, $idCol) {
     $organizeOrder = "";
@@ -71,7 +79,7 @@ function orderOrganizer($order, $tableRows, $idCol) {
 }
 
 function filterOrganizer($filter, $tableRows) {
-    $comOperatorsArray = array("LIKE", "NOT LIKE");
+    $comOperatorsArray = array("LIKE", "NOT LIKE",);
     $logOperatorsArray = array("AND", "OR", "||", "&&", "XOR");
     $slices = explode(";", $filter);
     $organizeFilter = "";
@@ -88,17 +96,21 @@ function filterOrganizer($filter, $tableRows) {
             } else if (arrayCheckIn($part, $logOperatorsArray)) {
                 $logOperator = arrayCheck($part, $logOperatorsArray);
             } else {
-                $search = $part;
+                $search = searchEscape($part);
             }
         }
         if (empty($col)) {
+            $organizeFilter .= "(";
             foreach($tableRows as $tableRow) {
                 $organizeFilter .= "`".$tableRow.
                 "` ".$comOperator.
                 " '".$search.
                 "' ";
-                if ($tableRow !== end($tableRows) or $slice !== end($slices)) {
-                    $organizeFilter .= $logOperator.
+                if ($tableRow !== end($tableRows)) {
+                    $organizeFilter .= "OR".
+                    " ";
+                }elseif ($slice !== end($slices)) {
+                    $organizeFilter .= ") ".$logOperator.
                     " ";
                 }
             }
