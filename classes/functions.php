@@ -112,6 +112,8 @@ function filterOrganizer($filter, $tableRows) {
                 }elseif ($slice !== end($slices)) {
                     $organizeFilter .= ") ".$logOperator.
                     " ";
+                }else {
+                    $organizeFilter .= ") ";
                 }
             }
         } else {
