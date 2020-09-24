@@ -13,7 +13,7 @@ class DataHandler {
 
     // Acceptable data
     public $tableRows; // Acceptable WHERE'S and SELECT's (tables columns)
-    private $validParams = array("select", "order", "where", "id", "filter", "limit", "offset", "page");
+    private $validParams = array("select", "order", "where", "id", "filter", "limit", "offset", "page", "statement", "token");
     private $validPaths;
     public $idCol;
 
@@ -22,34 +22,34 @@ class DataHandler {
      */
     public
     function __construct($obj, $connect) {
-        // Get the full URL and Valid paths and Method, such as POST, GET, PUT, DELETE
-        $url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-        $this -> path = basename(parse_url($url, PHP_URL_PATH));
-        $this -> validPaths = array_keys($obj["paths"]);
-        $this -> method = $_SERVER['REQUEST_METHOD'];
+            // Get the full URL and Valid paths and Method, such as POST, GET, PUT, DELETE
+            $url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+            $this -> path = basename(parse_url($url, PHP_URL_PATH));
+            $this -> validPaths = array_keys($obj["paths"]);
+            $this -> method = $_SERVER['REQUEST_METHOD'];
+            $this -> serverKey = $obj["serverKey"];
+            $this -> login = $obj["login"];
+            // controlPath then get table rows
+            $this -> controlPath();
+            $this -> table = $obj["paths"][$this -> path];
+            $this -> tableRows = $connect -> fetchArray("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='$this->table'");
+            //Added due to the possibility of id being in another name
+            $this -> primaryTableRows = $connect -> fetchArray("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.key_column_usage WHERE TABLE_NAME='$this->table' AND CONSTRAINT_NAME = 'PRIMARY'");
+            $this -> idCol = $this -> primaryTableRows[0];
+            // Get the GETS in the $this->validParams
+            $this -> params = array_combine($this -> validParams, array_map("getGet", $this -> validParams));
 
-        // controlPath then get table rows
-        $this -> controlPath();
-        $this -> table = $obj["paths"][$this -> path];
-        $this -> tableRows = $connect -> fetchArray("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='$this->table'");
-        //Added due to the possibility of id being in another name
-        $this -> primaryTableRows = $connect -> fetchArray("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.key_column_usage WHERE TABLE_NAME='$this->table' AND CONSTRAINT_NAME = 'PRIMARY'");
-        $this -> idCol = $this -> primaryTableRows[0];
-        // Get the GETS in the $this->validParams
-        $this -> params = array_combine($this -> validParams, array_map("getGet", $this -> validParams));
+            // Get posts, Only receives data sent
+            $this -> posts = array_filter(array_combine($this -> tableRows, array_map("getPOST", $this -> tableRows)));
+            // Get paths based on colum names and move id last ALWAYS.
+            $putParams = array_combine($this -> tableRows, array_map("getGet", $this -> tableRows));
+            $this -> putParams = array_values(moveIndexEnd($putParams, $this -> idCol));
 
-        // Get posts, remove ID
-        $this -> posts = array_map("getPOST", arrayKeyRemove($this -> tableRows, $this -> idCol));
-
-        // Get paths based on colum names and move id last ALWAYS.
-        $putParams = array_combine($this -> tableRows, array_map("getGet", $this -> tableRows));
-        $this -> putParams = array_values(moveIndexEnd($putParams, $this -> idCol));
-
-        $this -> sqlParams = array(':id' => $this -> params["id"]); //No need to escape it
-    }
-    /**
-     * errorHandler, echos ERROR JSON-response and it ends here
-     */
+            $this -> sqlParams = array(':id' => $this -> params["id"]); //No need to escape it
+        }
+        /**
+         * errorHandler, echos ERROR JSON-response and it ends here
+         */
     public
     function errorHandler() {
         $errorPath = array('validPaths' => $this -> validPaths, 'givenPath' => $this -> path);
@@ -58,9 +58,48 @@ class DataHandler {
         echo json_encode($error, JSON_PRETTY_PRINT);
         exit();
     }
+
     /**
-    * @return true if valid, else false
-    */
+     * Token generator to Post Method
+     */
+    public
+    function loginJwt($connect) {
+            $username = getPOST('username');
+            $password = getPOST('password');
+            $executeArray = array(':username' => $username, ':password' => $password);
+            $query = $connect -> fetchOneRow("SELECT * FROM ".$this -> login['table'].
+                " WHERE ".$this -> login['username'].
+                "=:username && ".$this -> login['password'].
+                "=:password", $executeArray);
+            if ($query) {
+                $nbf = strtotime("now");
+                $exp = strtotime($this -> login['expirationRemainingHours'].
+                    ' hour');
+                // create a token
+                $payloadArray = array();
+                $payloadArray['userId'] = $query[$this -> login['userId']];
+                $payloadArray['username'] = $query[$this -> login['username']];
+                $payloadArray['authorityLevel'] = $query[$this -> login['authorityLevel']];
+                if (isset($nbf)) {
+                    $payloadArray['nbf'] = $nbf;
+                }
+                if (isset($exp)) {
+                    $payloadArray['exp'] = $exp;
+                }
+                $token = JWT::encode($payloadArray, $this -> serverKey);
+
+                // return to caller
+                $returnArray['token'] =  $token;
+
+            } else {
+
+                $returnArray['error'] = 'Invalid user ID or password.';
+            }
+            return $returnArray;
+        }
+        /**
+         * @return true if valid, else false
+         */
     public
     function controlPath() {
         if (!in_array($this -> path, $this -> validPaths)) {
@@ -76,12 +115,12 @@ class DataHandler {
         // Incoming matches valid value sets
         $selectParams = explode(",", $this -> params["select"]);
         foreach($selectParams as $selectParam) {
-            if (!in_array($selectParam, $this -> tableRows) && $selectParam) {
-                $this -> errorHandler($this);
+                if (!in_array($selectParam, $this -> tableRows) && $selectParam) {
+                    $this -> errorHandler($this);
+                }
             }
-        }
-        // ---------------------------------------------------
-        // Only these values are valid
+            // ---------------------------------------------------
+            // Only these values are valid
         if (!is_numeric($this -> params["offset"]) && $this -> params["offset"]) {
             $this -> errorHandler();
         }

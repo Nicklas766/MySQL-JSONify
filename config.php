@@ -3,6 +3,7 @@ require_once("classes/Connect.php");
 require_once("classes/dataHandler.php");
 require_once("classes/SQLify.php");
 require_once("classes/functions.php");
+require_once('jwt.php');
 ini_set('display_errors', 'On');
 error_reporting(-1);
 

@@ -18,6 +18,7 @@ class SQLify {
 
     // Return part (select, where) if exists, else "*"
     public
+
     function getSQLPart($data, $part) {
         if ($data -> params[$part]) {
             return $data -> params[$part];
@@ -27,33 +28,33 @@ class SQLify {
 
     public
     function createSQL($data, $purpose = null) {
-        // Based on method, create SQL
-        switch ($data -> method) {
-            case 'GET':
-                return $this -> getSQL($data);
-            case 'POST':
-                return $this -> postSQL($data);
-            case 'PUT':
-                return $this -> updateSQL($data);
-            case 'DELETE':
-                return "DELETE FROM $data->table WHERE $data->id = :id ";
+            // Based on method, create SQL
+            switch ($data -> method) {
+                case 'GET':
+                    return $this -> getSQL($data);
+                case 'POST':
+                    return $this -> postSQL($data);
+                case 'PUT':
+                    return $this -> putSQL($data);
+                case 'DELETE':
+                    return "DELETE FROM $data->table WHERE $data->id = :id ";
+            }
         }
-    }
     // Create statement and return it
     public
-    function updateSQL($data) {
+    function putSQL($data) {
             $set = arrayKeyRemove($data -> tableRows, 'id');
             $set = implode($set, " = ?, ").
-            " = ? WHERE $data->id = ?";
+            " = ? WHERE $data->idCol = ?";
             return "UPDATE $data->table SET $set";
         }
-        // Create statement and return it
+    // Create statement and return it
     public
     function getSQL($data, $purpose = null) {
         $params = $data -> params;
         // If parameter exists, then make string else empty
         if ($params["id"]) {
-            $id = "WHERE $data->id = :id";
+            $id = "WHERE $data->idCol = ".firsNumberFinder($params["id"]);
         } else {
             $id = "";
         }
@@ -74,11 +75,11 @@ class SQLify {
             $offset = "OFFSET $params[offset]";
         }
         elseif($params["page"] > 0 and $params["limit"] > 0) {
-            $offset = "OFFSET ".($params["page"] - 1) * $params["limit"];
-        } else {
-            $offset = "";
-        }
-        //filter is back thanks for filterOrganizer function
+                $offset = "OFFSET ".($params["page"] - 1) * $params["limit"];
+            } else {
+                $offset = "";
+            }
+            //filter is back thanks for filterOrganizer function
         if ($params["filter"]) {
             $filter = " WHERE ".filterOrganizer($params["filter"], $data -> tableRows);
         } else {
@@ -93,13 +94,30 @@ class SQLify {
             return "SELECT $this->select FROM $data->table ".implode(" ", array_filter($stack));
         }
     }
-
+    // Create post method sql
     public
     function postSQL($data) {
-        $questionMarks = implode(array_fill(0, count($data -> posts), '?'), ",");
-        $set = implode(arrayKeyRemove($data -> tableRows, 'id'), ",");
+        $params = $data -> params;
+        $SQLs['GET'] = $this -> getSQL($data);
+        if (isset($params["statement"]) and $params["statement"] === "update"
+            and isset($data -> posts[$data -> idCol])) {
+            $SQLs['POST'] = updateOrganizer($data -> table, $data -> posts, $data -> idCol);
+        }
+        elseif(isset($params["statement"]) and $params["statement"] === "delete"
+            and isset($data -> posts[$data -> idCol])) {
+            $SQLs['POST'] = "DELETE FROM ".$data -> table.
+            " WHERE ".$data -> idCol.
+            "=".addStartEndSingleQuote($data -> posts[$data -> idCol]);
+        }
+        elseif(isset($params["statement"]) and $params["statement"] === "insert") {
+            $SQLs['POST'] = "INSERT INTO ".$data -> table.
+            " (".implode(array_flip($data -> posts), ",").
+            ") VALUES (".implode(array_map("addStartEndSingleQuote", array_map("sqlStringEscaper", $data -> posts)), ",").
+            ")";
+        }
 
-        return "INSERT INTO $data->table ($set) VALUES ($questionMarks)";
+
+        return $SQLs;
     }
 
 

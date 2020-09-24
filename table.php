@@ -3,9 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Table</title>
- <script src= 
-"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"> 
-    </script> 
+ <script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"> </script> 
 </head>
 <body>
 <style>

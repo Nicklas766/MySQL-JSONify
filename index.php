@@ -3,6 +3,10 @@
   <h2 style="border-bottom: orange solid 1px;"> Crudify </h2>
 
 <?php
+/*
+ini_set('display_errors', 'On');
+error_reporting(-1);
+*/
     // GET details
     $obj = (include 'details.php');
     $url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
