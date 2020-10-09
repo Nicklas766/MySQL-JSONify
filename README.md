@@ -17,6 +17,8 @@ This is a RESTful API created with PHP.  You connect your MySQL database which a
 
 The responses are in JSON. You can use parameters to create SQL-statmenents (safely) before fetching data.
 
+The difference of this library from similar ones is that it works easily on cheap shared servers.
+
 Setup
 -------------
 
