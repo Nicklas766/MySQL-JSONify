@@ -24,7 +24,7 @@ Setup
 
 In the `details.php` file you can type in your database information, so the Connect-class knows where to fetch the data.
 
-```php
+```
 "database" =>
     array(
          "host" => "XXX",
@@ -40,7 +40,7 @@ Paths
 
 You can connect your MySQL-tables to the URL path, by editing the `details.php` file. To add more simply name your path and then the table.
 
-```php
+```
 "paths" =>
     array(
          "path" => "MYSQL-TABLE-NAME",
@@ -56,7 +56,7 @@ Parameters
 The data is fetched with a SQL-statement. Therefore you can with parameters decide fairly good how you would like it to look like.
 
 Available params
-```php
+```
 ["select", "order", "id",  "limit", "offset",  "page", "filter"]
 ```
 
@@ -116,7 +116,7 @@ GET
 -------------
 
 `api.php/users`
-```json
+```
 [
     {
         "id": "1",
@@ -135,7 +135,7 @@ GET
 ```
 `api.php/users?order=asc,username`
 
-```json
+```
 [
     {
         "id": "5",
@@ -154,7 +154,7 @@ GET
 ```
 `api.php/users?order=desc`
 
-```json
+```
 [
     {
         "id": "5",
@@ -172,7 +172,7 @@ GET
 ```
 
 `api.php/users?select=username`
-```json
+```
 [
     {
         "username": "Adam"
@@ -194,7 +194,7 @@ GET
 ```
 
 `api.php/users?select=username,password`
-```json
+```
 [
     {
         "username": "Adam"
@@ -221,7 +221,7 @@ GET
 ```
 `api.php/users?filter=Adam`
 
-```json
+```
 [
     {
         "id": "5",
