@@ -31,7 +31,8 @@ class DataHandler {
             $this -> login = $obj["login"];
             // controlPath then get table rows
             $this -> controlPath();
-            $this -> table = $obj["paths"][$this -> path];
+            $this -> table = $obj["paths"][$this -> path]["name"];
+            $this -> tableProperty = $obj["paths"][$this -> path];
             $this -> tableRows = $connect -> fetchArray("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='$this->table'");
             //Added due to the possibility of id being in another name
             $this -> primaryTableRows = $connect -> fetchArray("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.key_column_usage WHERE TABLE_NAME='$this->table' AND CONSTRAINT_NAME = 'PRIMARY'");
@@ -113,6 +114,7 @@ class DataHandler {
         // ---------------------------------------------------
         // Controll Select
         // Incoming matches valid value sets
+		
         $selectParams = explode(",", $this -> params["select"]);
         foreach($selectParams as $selectParam) {
                 if (!in_array($selectParam, $this -> tableRows) && $selectParam) {
