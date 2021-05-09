@@ -3,7 +3,7 @@
 return
 array(
     "author" => "NICKLAS ENVALL,TURAN FURKAN TOPAK",
-    "version" => "2",
+    "version" => "3",
     "serverKey" => "5f2b5cdbe5194f10b3241568fe4e2b24",
     "login" =>
     array(
@@ -30,6 +30,10 @@ array(
             "select" => "1",
             "insert" => "1",
             "update" => "1",
+			"notUpdate" =>
+        array(
+            "tableName" => "0"
+        ),
             "delete" => "1"
         ),
         "users" =>

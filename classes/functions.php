@@ -45,10 +45,10 @@ function sqlOperator($params) {
                 $pieces[$key] = " '%".$value.
                 "%' ";
             }
-        // return string with operator for multiple "LIKEs" and "ANDs" and "ORs"
+            // return string with operator for multiple "LIKEs" and "ANDs" and "ORs"
         return implode($operator, $pieces);
     }
- //These two functions are added for ease of writing
+//These two functions are added for ease of writing
 function arrayCheck($value, $array) {
     return $array[array_search(strtolower($value), array_map('strtolower', $array))];
 }
@@ -77,8 +77,7 @@ function orderOrganizer($order, $tableRows, $idCol) {
         foreach($parts as $part) {
                 if (arrayCheckIn($part, $sortArray)) {
                     $sorter = arrayCheck($part, $sortArray);
-                }
-                elseif(arrayCheckIn($part, $tableRows)) {
+                } elseif (arrayCheckIn($part, $tableRows)) {
                     $col = arrayCheck($part, $tableRows);
                 }
             } //part and
@@ -94,98 +93,59 @@ function orderOrganizer($order, $tableRows, $idCol) {
 }
 
 
-function btComOperatorOrganizer($col, $searchWords, $status = 1) {
-    asort($searchWords);
+function btComOperatorOrganizer($col, $searchWords, $status=1) {
+	asort($searchWords);
     $searchFirst = current($searchWords);
     $searchEnd = end($searchWords);
-    if ($status == 0) {
-        return "`".$col.
-        "` NOT BETWEEN '".$searchFirst.
-        "' AND '".$searchEnd.
-        "' ";
+	if($status==0){
+            return "`".$col."` NOT BETWEEN '".$searchFirst."' AND '".$searchEnd."' ";
 
-    } else {
-        return "`".$col.
-        "` BETWEEN '".$searchFirst.
-        "' AND '".$searchEnd.
-        "' ";
-    }
-
+		}else{
+            return "`".$col."` BETWEEN '".$searchFirst."' AND '".$searchEnd."' ";
+		}
+	
 }
-
 function filterClauseOrganizer($col, $comOperator, $searchWords) {
     $search = current($searchWords);
     switch ($comOperator) {
-        case "lk": //LIKE
-            return "`".$col.
-            "` LIKE '".$search.
-            "' ";
-        case "nlk": //NOT LIKE
-            return "`".$col.
-            "` NOT LIKE '".$search.
-            "' ";
-        case "cs": //contain string (string contains value)
-            return "`".$col.
-            "` LIKE '%".$search.
-            "%' ";
-        case "ncs": //not contain string (string contains value)
-            return "`".$col.
-            "` NOT LIKE '%".$search.
-            "%' ";
-        case "sw": //start with (string starts with value)
-            return "`".$col.
-            "` LIKE '".$search.
-            "%' ";
-        case "ew": //end with (string end with value)
-            return "`".$col.
-            "` LIKE '%".$search.
-            "' ";
-        case "eq": //equal (string or number matches exactly)
-            return "`".$col.
-            "` = '".$search.
-            "' ";
-        case "neq": //not equal (string or number matches exactly)
-            return "`".$col.
-            "` != '".$search.
-            "' ";
-        case "lt": //lower than (number is lower than value)
-            return "`".$col.
-            "` > '".$search.
-            "' ";
-        case "le": //lower or equal (number is lower than or equal to value)
-            return "`".$col.
-            "` => '".$search.
-            "' ";
-        case "ge": //greater or equal (number is higher than or equal to value)
-            return "`".$col.
-            "` =< '".$search.
-            "' ";
-        case "gt": //greater than (number is higher than value)
-            return "`".$col.
-            "` < '".$search.
-            "' ";
-        case "bt": //between (number is between two comma separated values)
+        case "lk"://LIKE
+            return "`".$col."` LIKE '".$search."' ";
+        case "nlk"://NOT LIKE
+            return "`".$col."` NOT LIKE '".$search."' ";
+        case "cs"://contain string (string contains value)
+            return "`".$col."` LIKE '%".$search."%' ";
+        case "ncs"://not contain string (string contains value)
+            return "`".$col."` NOT LIKE '%".$search."%' ";
+        case "sw"://start with (string starts with value)
+            return "`".$col."` LIKE '".$search."%' ";
+        case "ew"://end with (string end with value)
+            return "`".$col."` LIKE '%".$search."' ";
+        case "eq"://equal (string or number matches exactly)
+            return "`".$col."` = '".$search."' ";
+        case "neq"://not equal (string or number matches exactly)
+            return "`".$col."` != '".$search."' ";
+        case "lt"://lower than (number is lower than value)
+            return "`".$col."` > '".$search."' ";
+        case "le"://lower or equal (number is lower than or equal to value)
+            return "`".$col."` => '".$search."' ";
+        case "ge"://greater or equal (number is higher than or equal to value)
+            return "`".$col."` =< '".$search."' ";
+        case "gt"://greater than (number is higher than value)
+            return "`".$col."` < '".$search."' ";
+        case "bt"://between (number is between two comma separated values)
             return btComOperatorOrganizer($col, $searchWords);
-        case "nbt": //not between (number is between two comma separated values)
+        case "nbt"://not between (number is between two comma separated values)
             return btComOperatorOrganizer($col, $searchWords, 0);
         case "in": //in (number or string is in comma separated list of values)
-            return "`".$col.
-            "` IN (".implode(",", array_map("addStartEndSingleQuote", $searchWords)).
-            ") ";
+            return "`".$col."` IN (".implode(",", array_map("addStartEndSingleQuote",$searchWords)).") ";
         case "nin": //not in (number or string is in comma separated list of values)
-            return "`".$col.
-            "` NOT IN (".implode(",", array_map("addStartEndSingleQuote", $searchWords)).
-            ") ";
-        case "is": //is null (field contains "NULL" value)
-            return "`".$col.
-            "` IS NULL ";
-        case "nis": //is not null (field contains "NULL" value)
-            return "`".$col.
-            "` IS NOT NULL ";
+            return "`".$col."` NOT IN (".implode(",", array_map("addStartEndSingleQuote",$searchWords)).") ";
+        case "is"://is null (field contains "NULL" value)
+            return "`".$col."` IS NULL ";
+        case "nis"://is not null (field contains "NULL" value)
+            return "`".$col."` IS NOT NULL ";
         default: //cace cs(?):
-            return "`".$col.
-            "` LIKE '%".$search.
-            "%' ";
+            return "`".$col."` LIKE '%".$search."%' ";
     }
 }
 
@@ -233,32 +193,33 @@ function filterOrganizer($filter, $tableRows) {
     }
     return $organizeFilter;
 }
-
+	
 // Update statement 
 function updateOrganizer($table, $posts, $idCol) {
-        $sql = "UPDATE `$table` SET ";
-        foreach($posts as $key => $value) {
-            if ($key !== $idCol) {
-                $sql = $sql.$key.
-                "=".addStartEndSingleQuote(sqlStringEscaper($value));
-                if ($value !== end($posts)) {
-                    $sql = $sql.
-                    ",";
-                }
+	//$refinedPosts = array_diff_key($posts, $tableProperty["notUpdate"]);//Galiba bu tam istediğim şey değil bira daha düşünmem lazım
+    $sql = "UPDATE `$table` SET ";
+    foreach($posts as $key => $value) {
+        if ($key !== $idCol) {
+            $sql = $sql.$key.
+            "=".addStartEndSingleQuote(sqlStringEscaper($value));
+            if ($value !== end($posts)) {
+                $sql = $sql.
+                ",";
             }
         }
-        $sql = $sql.
-        " WHERE ".$idCol.
-        "=".$posts[$idCol];
-        return $sql;
+    }
+    $sql = $sql.
+    " WHERE ".$idCol.
+    "=".$posts[$idCol];
+    return $sql;
 
-    }
-// Select statement(Out of Order)
+}
+// Select statement 
 function selectOrganizer($selectStr, $tableRows) {
-        $aggFunctions = array("avg", 'count', 'max', 'min', 'sum');
-        $scaFunctions = array("ucase", 'lcase', 'mid', 'len', 'clen', 'round');
-        $otherFunctions = array('dist'); //dist=DISTINCT 
-    }
+$aggFunctions = array("avg",'count','max','min','sum');
+$scaFunctions = array("ucase",'lcase','mid','len','clen','round');
+$otherFunctions = array('dist');//dist=DISTINCT 
+}
 // Moves the element to the end index and return array
 function returnInfo($data, $sql, $connect) {
     $params = $data -> params;
@@ -277,12 +238,12 @@ function returnInfo($data, $sql, $connect) {
     }
     elseif($params["token"]) {
         $info["posts"] = $data -> posts;
-        $info["login"] = $connect -> connectInfo['login']; //stdclass
-        if (is_array($info["login"])) {
-            $info['login']['token'] = $params["token"];
-        } else {
-            $info['login'] -> token = $params["token"];
-        }
+        $info["login"] = $connect -> connectInfo['login'];//stdclass
+		if(is_array($info["login"])){
+        $info['login']['token'] = $params["token"];
+		}else{
+        $info['login']->token = $params["token"];
+			}
     }
     if (isset($connect -> connectInfo['executeStatus'])) {
         $info["executeStatus"] = $connect -> connectInfo['executeStatus'];

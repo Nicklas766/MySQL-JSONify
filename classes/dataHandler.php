@@ -16,7 +16,10 @@ class DataHandler {
     private $validParams = array("select", "order", "where", "id", "filter", "limit", "offset", "page", "statement", "token");
     private $validPaths;
     public $idCol;
-
+    public $loginInfo;
+    public $statementPass;
+	
+	
     /**
      * Constructor
      */
@@ -134,5 +137,37 @@ class DataHandler {
         if (!is_numeric($this -> params["page"]) && $this -> params["page"]) {
             $this -> errorHandler();
         }
+		
+		
+        if($this -> params["token"]) {
+			
+
+                    try {
+                        $this -> loginInfo['login'] = JWT::decode($this -> params["token"], $this -> serverKey, array('HS256'));
+
+						if(is_null(@$this -> tableProperty[$this -> params["statement"]]) or $this -> tableProperty[$this -> params["statement"]] >= $this -> loginInfo['login'] -> authorityLevel){
+                        //$connect -> execute($sql -> sql['POST']);
+							if (isset($this -> params["statement"]) and $this -> params["statement"] === "update" and isset($this -> posts[$data -> idCol])) {
+				foreach($this -> tableProperty["notUpdate"] as $key => $value) {
+					unset($this -> posts[$key]);
+				}
+				
+							}
+						$this -> statementPass = true;
+						}else{
+						$this -> statementPass = false;
+						$this -> loginInfo['login']-> error = "Authority level not enough for ".$this -> params["statement"];
+						}
+                    } catch (Exception $e) {
+						 $this -> statementPass = false;
+						 $this -> loginInfo['login']['error'] = $e -> getMessage();
+						}//token işlemini controlParams'a taşıyalım
+                    //return $connect -> jsonResponse($sql -> sql['GET'], $data -> sqlParams, returnInfo($data, $sql, $this), $data);
+                }
+		
+		
+		
+		
+		
     }
 }
