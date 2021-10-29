@@ -195,13 +195,15 @@ function filterOrganizer($filter, $tableRows) {
 }
 	
 // Update statement 
-function updateOrganizer($table, $posts, $idCol) {
+function updateOrganizer($table, $posts, $idCol, $tableProperty, $loginInfo) {
 	//$refinedPosts = array_diff_key($posts, $tableProperty["notUpdate"]);//Galiba bu tam istediğim şey değil bira daha düşünmem lazım
+	//$test = print_r($loginInfo);
     $sql = "UPDATE `$table` SET ";
     foreach($posts as $key => $value) {
         if ($key !== $idCol) {
             $sql = $sql.$key.
             "=".addStartEndSingleQuote(sqlStringEscaper($value));
+			//"=".addStartEndSingleQuote(sqlStringEscaper($test));
             if ($value !== end($posts)) {
                 $sql = $sql.
                 ",";
@@ -211,6 +213,13 @@ function updateOrganizer($table, $posts, $idCol) {
     $sql = $sql.
     " WHERE ".$idCol.
     "=".$posts[$idCol];
+					if (array_key_exists('ifUpdate', $tableProperty)) {
+				foreach($tableProperty["ifUpdate"] as $key => $value) {
+					if($value <= $loginInfo -> authorityLevel){
+					    $sql = $sql. " AND ". "`". $key."`". " = ".$loginInfo -> userId;
+				    }
+				}
+				}
     return $sql;
 
 }

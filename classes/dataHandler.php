@@ -5,6 +5,7 @@ class DataHandler {
     public $path;
     public $method;
     public $table;
+    public $tableProperty;
 
     // Rows data
     public $params;
@@ -18,8 +19,8 @@ class DataHandler {
     public $idCol;
     public $loginInfo;
     public $statementPass;
-	
-	
+
+
     /**
      * Constructor
      */
@@ -34,6 +35,7 @@ class DataHandler {
             $this -> login = $obj["login"];
             // controlPath then get table rows
             $this -> controlPath();
+            $this -> controlParams();
             $this -> table = $obj["paths"][$this -> path]["name"];
             $this -> tableProperty = $obj["paths"][$this -> path];
             $this -> tableRows = $connect -> fetchArray("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='$this->table'");
@@ -50,6 +52,33 @@ class DataHandler {
             $this -> putParams = array_values(moveIndexEnd($putParams, $this -> idCol));
 
             $this -> sqlParams = array(':id' => $this -> params["id"]); //No need to escape it
+
+
+
+            if ($this -> params["token"]) {
+
+                try {
+                    $this -> loginInfo['login'] = JWT::decode($this -> params["token"], $this -> serverKey, array('HS256'));
+
+                    if (is_null(@$this -> tableProperty[$this -> params["statement"]]) or $this -> tableProperty[$this -> params["statement"]] >= $this -> loginInfo['login'] -> authorityLevel) {
+                        //$connect -> execute($sql -> sql['POST']);
+                        //For the update process
+                        /*
+							if (isset($this -> params["statement"]) and $this -> params["statement"] === "update" and isset($this -> posts[$this -> idCol])) {
+
+							}
+							*/
+                        $this -> statementPass = true;
+                    } else {
+                        $this -> statementPass = false;
+                        $this -> loginInfo['login'] -> error = "Authority level not enough for ".$this -> params["statement"];
+                    }
+                } catch (Exception $e) {
+                    $this -> statementPass = false;
+                    $this -> loginInfo['login']['error'] = $e -> getMessage();
+                }
+                //return $connect -> jsonResponse($sql -> sql['GET'], $data -> sqlParams, returnInfo($data, $sql, $this), $data);
+            }
         }
         /**
          * errorHandler, echos ERROR JSON-response and it ends here
@@ -93,7 +122,7 @@ class DataHandler {
                 $token = JWT::encode($payloadArray, $this -> serverKey);
 
                 // return to caller
-                $returnArray['token'] =  $token;
+                $returnArray['token'] = $token;
 
             } else {
 
@@ -117,15 +146,16 @@ class DataHandler {
         // ---------------------------------------------------
         // Controll Select
         // Incoming matches valid value sets
-		
-        $selectParams = explode(",", $this -> params["select"]);
-        foreach($selectParams as $selectParam) {
+        if ($this -> params["select"]) {
+            $selectParams = explode(",", $this -> params["select"]);
+            foreach($selectParams as $selectParam) {
                 if (!in_array($selectParam, $this -> tableRows) && $selectParam) {
                     $this -> errorHandler($this);
                 }
             }
-            // ---------------------------------------------------
-            // Only these values are valid
+        }
+        // ---------------------------------------------------
+        // Only these values are valid
         if (!is_numeric($this -> params["offset"]) && $this -> params["offset"]) {
             $this -> errorHandler();
         }
@@ -137,37 +167,9 @@ class DataHandler {
         if (!is_numeric($this -> params["page"]) && $this -> params["page"]) {
             $this -> errorHandler();
         }
-		
-		
-        if($this -> params["token"]) {
-			
 
-                    try {
-                        $this -> loginInfo['login'] = JWT::decode($this -> params["token"], $this -> serverKey, array('HS256'));
 
-						if(is_null(@$this -> tableProperty[$this -> params["statement"]]) or $this -> tableProperty[$this -> params["statement"]] >= $this -> loginInfo['login'] -> authorityLevel){
-                        //$connect -> execute($sql -> sql['POST']);
-							if (isset($this -> params["statement"]) and $this -> params["statement"] === "update" and isset($this -> posts[$data -> idCol])) {
-				foreach($this -> tableProperty["notUpdate"] as $key => $value) {
-					unset($this -> posts[$key]);
-				}
-				
-							}
-						$this -> statementPass = true;
-						}else{
-						$this -> statementPass = false;
-						$this -> loginInfo['login']-> error = "Authority level not enough for ".$this -> params["statement"];
-						}
-                    } catch (Exception $e) {
-						 $this -> statementPass = false;
-						 $this -> loginInfo['login']['error'] = $e -> getMessage();
-						}//token işlemini controlParams'a taşıyalım
-                    //return $connect -> jsonResponse($sql -> sql['GET'], $data -> sqlParams, returnInfo($data, $sql, $this), $data);
-                }
-		
-		
-		
-		
-		
+
+
     }
 }

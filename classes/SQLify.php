@@ -39,7 +39,7 @@ class SQLify {
                     return "DELETE FROM `$data->table` WHERE $data->id = :id ";
             }
         }
-    // Create statement and return it
+        // Create statement and return it
     public
     function putSQL($data) {
             $set = arrayKeyRemove($data -> tableRows, 'id');
@@ -47,75 +47,101 @@ class SQLify {
             " = ? WHERE $data->idCol = ?";
             return "UPDATE `$data->table` SET $set";
         }
-    // Create statement and return it
+        // Create statement and return it
     public
     function getSQL($data, $purpose = null) {
-        $params = $data -> params;
-        // If parameter exists, then make string else empty
-        if ($params["id"]) {
-            $id = "WHERE $data->idCol = ".firsNumberFinder($params["id"]);
-        } else {
-            $id = "";
-        }
-        //Select if
-        if ($params["select"]) {
-            $select = "";
-        } else {
-            $select = "*";
-        }
-        //Order if
-        if ($params["order"]) {
-            $order = "ORDER BY ".orderOrganizer($params["order"], $data -> tableRows, $data -> idCol);
-        } else {
-            $order = "";
-        }
-        //Limit if
-        if ($params["limit"] > 0) {
-            $limit = "LIMIT $params[limit]";
-        } else {
-            $limit = "LIMIT 18446744073709551610";
-        }
-        //Page params change but it is not organize will be change
-        if ($params["offset"] > 0) {
-            $offset = "OFFSET $params[offset]";
-        }
-        elseif($params["page"] > 0 and $params["limit"] > 0) {
-                $offset = "OFFSET ".($params["page"] - 1) * $params["limit"];
+            $params = $data -> params;
+            // If parameter exists, then make string else empty
+            if ($params["id"]) {
+                $id = "WHERE $data->idCol = ".firsNumberFinder($params["id"]);
             } else {
-                $offset = "";
+                $id = "";
             }
-            //filter is back thanks for filterOrganizer function
-        if ($params["filter"]) {
-            $filter = " WHERE ".filterOrganizer($params["filter"], $data -> tableRows);
-        } else {
-            $filter = "";
+            //Select if
+            if ($params["select"]) {
+                $select = "";
+            } else {
+                $select = "*";
+            }
+            //Order if
+            if ($params["order"]) {
+                $order = "ORDER BY ".orderOrganizer($params["order"], $data -> tableRows, $data -> idCol);
+            } else {
+                $order = "";
+            }
+            //Limit if
+            if ($params["limit"] > 0) {
+                $limit = "LIMIT $params[limit]";
+            } else {
+                $limit = "LIMIT 18446744073709551610";
+            }
+            //Page params change but it is not organize will be change
+            if ($params["offset"] > 0) {
+                $offset = "OFFSET $params[offset]";
+            }
+            elseif($params["page"] > 0 and $params["limit"] > 0) {
+                    $offset = "OFFSET ".($params["page"] - 1) * $params["limit"];
+                } else {
+                    $offset = "";
+                }
+                //filter is back thanks for filterOrganizer function
+            if ($params["filter"]) {
+                $filter = " WHERE ".filterOrganizer($params["filter"], $data -> tableRows);
+            } else {
+                $filter = "";
+            }
+            //creates the required sql to create the total number of pages required for pagination
+            if ($purpose == "pagination") {
+                $stack = array($id, $filter, $order);
+                return "SELECT $this->select FROM `$data->table` ".implode(" ", array_filter($stack));
+            } else {
+                $stack = array($id, $filter, $order, $limit, $offset);
+                return "SELECT $this->select FROM `$data->table` ".implode(" ", array_filter($stack));
+            }
         }
-        //creates the required sql to create the total number of pages required for pagination
-        if ($purpose == "pagination") {
-            $stack = array($id, $filter, $order);
-            return "SELECT $this->select FROM `$data->table` ".implode(" ", array_filter($stack));
-        } else {
-            $stack = array($id, $filter, $order, $limit, $offset);
-            return "SELECT $this->select FROM `$data->table` ".implode(" ", array_filter($stack));
-        }
-    }
-    // Create post method sql
+        // Create post method sql
     public
     function postSQL($data) {
         $params = $data -> params;
         $SQLs['GET'] = $this -> getSQL($data);
         if (isset($params["statement"]) and $params["statement"] === "update"
             and isset($data -> posts[$data -> idCol])) {
-            $SQLs['POST'] = updateOrganizer($data -> table, $data -> posts, $data -> idCol);
+
+
+            if (array_key_exists('notUpdate', $data -> tableProperty)) {
+                foreach($data -> tableProperty["notUpdate"] as $key => $value) {
+                    if ($value <= $data -> loginInfo['login'] -> authorityLevel) {
+                        unset($data -> posts[$key]);
+                        $data -> loginInfo['login'] -> notUpdate = "Authority level not enough update for ".$key;
+
+                    }
+                }
+            }
+
+            
+				if (array_key_exists('ifUpdate', $data -> tableProperty)) {
+				foreach($data -> tableProperty["ifUpdate"] as $key => $value) {
+					if($value <= $data -> loginInfo['login'] -> authorityLevel){
+						$data -> loginInfo['login']-> ifUpdate = "Authority level not enough for direct update";
+
+				    }
+				}
+				}
+	
+
+            //$SQLs['POST'] = updateOrganizer($data -> table, $data -> posts, $data -> idCol, $data -> tableProperty);
+            $SQLs['POST'] = updateOrganizer($data -> table, $data -> posts, $data -> idCol, $data -> tableProperty, $data -> loginInfo['login']);
         }
         elseif(isset($params["statement"]) and $params["statement"] === "delete"
             and isset($data -> posts[$data -> idCol])) {
-            $SQLs['POST'] = "DELETE FROM `".$data -> table."` WHERE ".
-			$data -> idCol.
+            $SQLs['POST'] = "DELETE FROM `".$data -> table.
+            "` WHERE ".
+            $data -> idCol.
             "=".addStartEndSingleQuote($data -> posts[$data -> idCol]);
         }
         elseif(isset($params["statement"]) and $params["statement"] === "insert") {
-            $SQLs['POST'] = "INSERT INTO `".$data -> table."`(".
+            $SQLs['POST'] = "INSERT INTO `".$data -> table.
+            "`(".
             implode(array_flip($data -> posts), ",").
             ") VALUES (".implode(array_map("addStartEndSingleQuote", array_map("sqlStringEscaper", $data -> posts)), ",").
             ")";
