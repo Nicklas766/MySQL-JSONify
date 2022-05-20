@@ -19,7 +19,7 @@ ol#pagination li {
 <select  id="path" >
 <?php
 foreach($obj["paths"] as $key => $value){
-    echo '<option value="'.$key.'">'.$value.'</option>'; 
+    echo '<option value="'.$key.'">'.$key.'</option>'; 
 }
 ?>
 </select>
@@ -37,12 +37,62 @@ foreach($obj["paths"] as $key => $value){
     <tbody id="tablebody"></tbody>
 </table> 
     <script> 
+	
+function getPages(currentPage, visiblePages, totalPages) {
+    var pages = [];
+
+    var half = Math.floor(visiblePages / 2);
+    var start = currentPage - half + 1 - visiblePages % 2;
+    var end = currentPage + half;
+
+    if (visiblePages > totalPages) {
+        visiblePages = totalPages;
+    }
+    if (start <= 0) {
+        start = 1;
+        end = visiblePages;
+    }
+    if (end > totalPages) {
+        start = totalPages - visiblePages + 1;
+        end = totalPages;
+    }
+
+    var itPage = start;
+    while (itPage <= end) {
+        pages.push(itPage);
+        itPage++;
+    }
+
+    return pages;
+}
+
+
+function $_GET(param) {
+	var vars = {};
+	window.location.href.replace( location.hash, '' ).replace( 
+		/[?&]+([^=&]+)=?([^&]*)?/gi, // regexp
+		function( m, key, value ) { // callback
+			vars[key] = value !== undefined ? value : '';
+		}
+	);
+
+	if ( param ) {
+		return vars[param] ? vars[param] : null;	
+	}
+	return vars;
+}
+
+	
+	
+	
+	
 var currentPage = "";
 var selectCols = [];
 var orderCols = {};
 var orderCol = "";
 var selectColChecked = "";
 var orderColed = '';
+var visiblePages = 3;
 /*Select Module*/
 $("#checboxes").click(function() {
     selectCols = [];
@@ -84,17 +134,50 @@ $("#pagination").click(function(event) {
 $("#path, #selectCol, #filter, #order, #offset, #page, #limit, #pagination, #checboxes, table")
     .on('keyup change click', function(event) {
         var path = document.getElementById("path");
+        var pathValue = path.value;
         var filter = document.getElementById("filter");
+        var filterValue = filter.value;
         var offset = document.getElementById("offset");
+        var offsetValue = offset.value;
         var limit = document.getElementById("limit");
+        var limitValue = limit.value;
         var linkJson = "api.php/" + path.value + "?select=" + selectColChecked + "&filter=" + filter.value + "&order=" + orderColed + "&offset=" + offset.value + "&page=" + currentPage + "&limit=" + limit.value + "";
         $("#linkName").html(linkJson);
+		history.pushState(null, null, "?select=" + selectColChecked + "&filter=" + filter.value + "&order=" + orderColed + "&offset=" + offset.value + "&page=" + currentPage + "&limit=" + limit.value + "");
         //Json System
         $.getJSON(linkJson, function(data) {
             //Pagination system
             var pagination = "";
-            for (i = 1; i <= data.info.numberOfPages; i++) {
-                pagination += '<a href="javascript:void(0)"><li class="page" data-page="' + i + '">' + i + '</li></a>';
+            if (1 < data.info.numberOfPages) {
+                if (data.info.page) {
+                    var currentPage = parseInt(data.info.page);
+                } else if ($_GET('page')){
+					var currentPage = parseInt($_GET('page'));
+				}else {
+                    var currentPage = 1;
+                }
+                var showPages = getPages(currentPage, visiblePages, data.info.numberOfPages);
+                if (currentPage == 1) {
+                    pagination += '<li class="page" data-page="' + 1 + '">' + 'First' + '</li>';
+                    pagination += '<li class="page" data-page="' + (currentPage - 1) + '">' + '<' + '</li>';
+                } else {
+                    pagination += '<a href="javascript:void(0)"><li class="page" data-page="' + 1 + '">' + 'First' + '</li></a>';
+                    pagination += '<a href="javascript:void(0)"><li class="page" data-page="' + (currentPage - 1) + '">' + '<' + '</li></a>';
+                }
+                for (i = showPages[0]; i <= showPages[showPages.length - 1]; i++) {
+                    if (currentPage == i) {
+                        pagination += '<li class="page" data-page="' + i + '">' + i + '</li>';
+                    } else {
+                        pagination += '<a href="javascript:void(0)"><li class="page" data-page="' + i + '">' + i + '</li></a>';
+                    }
+                }
+                if (currentPage == data.info.numberOfPages) {
+                    pagination += '<li class="page" data-page="' + (currentPage - -1) + '">' + '>' + '</li>';
+                    pagination += '<li class="page" data-page="' + data.info.numberOfPages + '">' + 'Last' + '</li>';
+                } else {
+                    pagination += '<a href="javascript:void(0)"><li class="page" data-page="' + (currentPage - -1) + '">' + '>' + '</li></a>';
+                    pagination += '<a href="javascript:void(0)"><li class="page" data-page="' + data.info.numberOfPages + '">' + 'Last' + '</li></a>';
+                }
             }
             $("#pagination").html(pagination);
             //Select System
