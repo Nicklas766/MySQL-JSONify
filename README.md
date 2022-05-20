@@ -17,6 +17,8 @@ This is a RESTful API created with PHP.  You connect your MySQL database which a
 
 The responses are in JSON. You can use parameters to create SQL-statmenents (safely) before fetching data.
 
+The difference of this library from similar ones is that it works easily on cheap shared servers.
+
 Setup
 -------------
 
@@ -24,12 +26,12 @@ In the `details.php` file you can type in your database information, so the Conn
 
 ```
 "database" =>
-    [
+    array(
          "host" => "XXX",
          "dbname" => "XXX",
          "username" => "XXX",
          "password" => "XXX"
-    ],
+    ),
 
 ```
 
@@ -40,11 +42,11 @@ You can connect your MySQL-tables to the URL path, by editing the `details.php` 
 
 ```
 "paths" =>
-    [
+    array(
          "path" => "MYSQL-TABLE-NAME",
          "users" => "users",
          "products" => "Shop_Products"
-    ]
+    )
 ```
 
 If we would request data from `api.php/products`  then we would receive data from the table "Shop_Products". So you choose the path and which table to connect it to.
@@ -55,7 +57,7 @@ The data is fetched with a SQL-statement. Therefore you can with parameters deci
 
 Available params
 ```
-["select", "order", "id",  "limit", "offset"]
+["select", "order", "id",  "limit", "offset",  "page", "filter"]
 ```
 
 So let's go through how the SQL-statements can look like,
@@ -80,7 +82,8 @@ Limit
  api.php/users?offset=3 == SELECT * FROM users LIMIT 18446744073709551610 OFFSET 3
 
  api.php/users?limit=2&offset=3 == SELECT * FROM users LIMIT 2 OFFSET 3
-
+ 
+ api.php/users?limit=2&page=7 == SELECT * FROM users LIMIT 2 OFFSET 12
 ```
 ---
 Examples (GET, POST, PUT, DELETE)
@@ -130,6 +133,25 @@ GET
 ...
 
 ```
+`api.php/users?order=asc,username`
+
+```
+[
+    {
+        "id": "5",
+        "username": "Adam",
+        "password": "pass5",
+        "authority": "user"
+    },
+    {
+        "id": "2",
+        "username": "Rasmus Lerdorf",
+        "password": "pass2",
+        "authority": "admin"
+    },
+...
+
+```
 `api.php/users?order=desc`
 
 ```
@@ -168,7 +190,49 @@ GET
         "username": "Steve"
     }
 ]
+...
 ```
+
+`api.php/users?select=username,password`
+```
+[
+    {
+        "username": "Adam"
+        "password": "pass5"
+    },
+    {
+        "username": "Jessica"
+        "password": "pass3"
+    },
+    {
+        "username": "Nicklas766"
+        "password": "pass1"
+    },
+    {
+        "username": "Rasmus Lerdorf"
+        "password": "pass2"
+    },
+    {
+        "username": "Steve"
+        "password": "pass4"
+    }
+]
+...
+```
+`api.php/users?filter=Adam`
+
+```
+[
+    {
+        "id": "5",
+        "username": "Adam",
+        "password": "pass5",
+        "authority": "user"
+    },
+	]
+...
+```
+
 POST
 -------------
 You can send in the column names as parameters name. If the value is empty then it will be null.

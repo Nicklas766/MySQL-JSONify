@@ -3,6 +3,10 @@
   <h2 style="border-bottom: orange solid 1px;"> Crudify </h2>
 
 <?php
+/*
+ini_set('display_errors', 'On');
+error_reporting(-1);
+*/
     // GET details
     $obj = (include 'details.php');
     $url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
@@ -33,16 +37,25 @@
       <ul>
         <li><a style="color:orange;" href="<?= "$url?order=asc"?>"> ?order=asc</a></li>
         <li><a style="color:orange;" href="<?= "$url?order=desc"?>"> ?order=desc</a></li>
+        <li><a style="color:orange;" href="<?= "$url?order=asc," .$data->tableRows[1]. ""?>"> ?order=asc,<?=$data->tableRows[1]?></a></li>
+        <li><a style="color:orange;" href="<?= "$url?order=desc," .$data->tableRows[1]. ";asc," .$data->tableRows[2]. ""?>"> ?order=desc,<?=$data->tableRows[1]?>;asc,<?=$data->tableRows[2]?></a></li>
 
         -----
 
         <li><a style="color:orange;" href="<?= "$url?select=" .$data->tableRows[0]. ""?>">?select=<?=$data->tableRows[0]?></a></li>
         <li><a style="color:orange;" href="<?= "$url?select=" .$data->tableRows[1]. ""?>">?select=<?=$data->tableRows[1]?></a></li>
+        <li><a style="color:orange;" href="<?= "$url?select=" .$data->tableRows[0]. ",".$data->tableRows[1]?>">?select=<?=$data->tableRows[0]?>,<?=$data->tableRows[1]?></a></li>
 
         -----
         <li><a style="color:orange;" href="<?= "$url?limit=5"?>"> ?limit=5</a></li>
         <li><a style="color:orange;" href="<?= "$url?limit=2&offset=3"?>"> ?limit=2&offset=3</a></li>
+        <li><a style="color:orange;" href="<?= "$url?limit=2&page=3"?>"> ?limit=2&page=3</a></li>
 
+        -----
+        
+        <li><a style="color:orange;" href="<?= "$url?filter=the". ""?>"> ?filter=the</a></li>
+        <li><a style="color:orange;" href="<?= "$url?filter=the," .$data->tableRows[1]. ",like,and;an," .$data->tableRows[2]. ",not like"?>"> ?filter=the,<?=$data->tableRows[1]?>,like,and;an,<?=$data->tableRows[2]?>,not like</a></li>
+        
         -----
       </ul>
     </div>
